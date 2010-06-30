@@ -1,4 +1,5 @@
 import cgi
+from Scraper import scraper
 
 from google.appengine.ext import webapp
 from google.appengine.api import users
@@ -44,6 +45,8 @@ class MainPage(webapp.RequestHandler):
         self.show_sources()
 
         self.show_footer()
+
+        self.response.out.write(scraper().scrape_spore("csmith87"))
 
     def show_header(self):
         self.response.out.write("""
