@@ -43,6 +43,7 @@ class MainPage(webapp.RequestHandler):
             self.show_admin_form()
 
         self.show_sources()
+        self.show_achievements()
 
         self.show_footer()
 
@@ -119,6 +120,20 @@ class MainPage(webapp.RequestHandler):
            <input type="submit" value="Add"/>
           </form>""")
 
+    def show_achievements(self):
+        self.response.out.write("<h1>My Achievements</h1>")
+
+        for achievement in AwardedAchievement.gql("WHERE user = :user", user=users.get_current_user()):
+            self.show_achievement(achievement)
+
+    def show_achievement(self, achievement):
+        self.response.out.write("""
+            <div class="achievement">
+             <img src="%s" alt="%s"/>
+            </div>
+            """ % (cgi.escape(achievement.achievement.image),
+                  cgi.escape(achievement.achievement.name)))
+
 class AddSourcePage(webapp.RequestHandler):
     def post(self):
 
@@ -162,11 +177,8 @@ class UpdatePage(webapp.RequestHandler):
 
     @staticmethod
     def merge_achievements(account, achievements):
-        source = account.source
-        user = account.user
-
         for awarded in achievements:
-            achievement = UpdatePage.get_achievement(source, awarded)
+            achievement = UpdatePage.get_achievement(account.source, awarded)
 
             res = AwardedAchievement.gql("WHERE achievement = :ac AND user = :user",
                                          ac=achievement,
