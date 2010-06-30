@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <title>Achievement Aggregator</title>
+        <style type="text/css">
+            .achievement {
+                border: 1px solid black;
+                position: relative;
+                display: block;
+                width: 450px;
+                height: 90px;
+            }
+
+            .achievement .img {
+                width: 90px;
+                height: 90px;
+                float: left;
+                text-align: center;
+            }
+
+            .achievement .source {
+                display: inline;
+                font-weight: bold;
+            }
+
+            .achievement .source:after {
+                content: ':';
+            }
+
+            .achievement .name {
+                display: inline;
+            }
+
+            .achievement .description {
+                font-style: italic;
+            }
+
+            .achievement .date {
+                position: absolute;
+                margin: 0;
+                top: 0;
+                right: 0;
+                font-size: small;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="content">
+            <h1>My Accounts</h1>
+            <table>
+                <tr>
+                    <th>Source</th>
+                    <th>Credentials</th>
+                </tr>
+                {% for account in accounts %}
+                <tr>
+                    <td>{{ account.source.name|escape }}</td>
+                    <td>{{ account.credentials|escape }}</td>
+                    <td>
+                        <form action="/worker/update" method="post">
+                            <input type="hidden" name="key" value="{{ account.key|escape }}"/>
+                            <input type="submit" value="Update now"/>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <h1>My Achievements</h1>
+
+            {% for achievement in achievements %}
+            <div class="achievement">
+                <p class="source">{{ achievement.achievement.source.name|escape }}</p>
+                <div class="img">
+                    <img src="{{ achievement.achievement.image|escape }}"
+                         alt="{{ achievement.achievement.name|escape }}"/>
+                </div>
+                <p class="name">{{ achievement.achievement.name|escape }}</p>
+                <p class="description">{{ achievement.achievement.description|escape }}</p>
+                <p class="date">{{ achievement.awarded|escape }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </body>
+</html>

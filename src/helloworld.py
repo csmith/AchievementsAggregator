@@ -1,5 +1,7 @@
 import cgi
 from Scraper import scraper
+import os
+from google.appengine.ext.webapp import template
 
 from google.appengine.ext import webapp
 from google.appengine.api import users
@@ -37,28 +39,14 @@ class MainPage(webapp.RequestHandler):
             self.redirect(users.create_login_url(self.request.uri))
             return
 
-        self.show_header()
+        template_values = {
+            'is_admin': users.is_current_user_admin(),
+            'accounts': UserAccount.gql("WHERE user = :user", user=user),
+            'achievements': AwardedAchievement.gql("WHERE user = :user", user=user)
+        }
 
-        if users.is_current_user_admin():
-            self.show_admin_form()
-
-        self.show_sources()
-        self.show_achievements()
-
-        self.show_footer()
-
-    def show_header(self):
-        self.response.out.write("""
-          <html>
-            <head>
-              <title>Achievements Aggregator</title>
-            </head>
-            <body>""")
-
-    def show_footer(self):
-        self.response.out.write("""
-            </body>
-          </html>""")
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_values))
 
     def show_admin_form(self):
         self.response.out.write("""
@@ -84,25 +72,6 @@ class MainPage(webapp.RequestHandler):
         self.response.out.write("</table>")
 
     def show_sources(self):
-        self.response.out.write("<h1>My Accounts</h1>")
-        self.response.out.write("<table>")
-        self.response.out.write("<tr><th>Source</th><th>Credentials</th></tr>")
-
-        for account in UserAccount.gql("WHERE user = :user", user=users.get_current_user()):
-            self.response.out.write("<tr><td>")
-            self.response.out.write(cgi.escape(account.source.name))
-            self.response.out.write("</td><td>")
-            self.response.out.write(cgi.escape(account.credentials))
-            self.response.out.write("""
-               </td><td>
-                 <form action="/worker/update" method="post">
-                 <input type="hidden" name="key" value=""")
-            self.response.out.write('"' + cgi.escape(str(account.key())) + '"')
-            self.response.out.write(""">
-                 <input type="submit" value="Update now">
-               </td></tr>
-               """)
-
         self.response.out.write("</table>")
         self.response.out.write("""<h2>Add Account</h2>
           <form action="/addaccount" method="post">
