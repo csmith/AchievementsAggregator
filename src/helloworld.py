@@ -46,8 +46,6 @@ class MainPage(webapp.RequestHandler):
 
         self.show_footer()
 
-        self.response.out.write(scraper().scrape_spore("csmith87"))
-
     def show_header(self):
         self.response.out.write("""
           <html>
@@ -94,7 +92,15 @@ class MainPage(webapp.RequestHandler):
             self.response.out.write(cgi.escape(account.source.name))
             self.response.out.write("</td><td>")
             self.response.out.write(cgi.escape(account.credentials))
-            self.response.out.write("</td></tr>")
+            self.response.out.write("""
+               </td><td>
+                 <form action="/worker/update" method="post">
+                 <input type="hidden" name="key" value=""")
+            self.response.out.write('"' + cgi.escape(str(account.key())) + '"')
+            self.response.out.write(""">
+                 <input type="submit" value="Update now">
+               </td></tr>
+               """)
 
         self.response.out.write("</table>")
         self.response.out.write("""<h2>Add Account</h2>
@@ -144,8 +150,49 @@ class AddAccountPage(webapp.RequestHandler):
 
 
 class UpdatePage(webapp.RequestHandler):
+
     def post(self):
         account = db.get(db.Key(self.request.get('key')))
+        res = []
+
+        if account.source.name == 'Spore':
+            res = scraper().scrape_spore(account.credentials)
+
+        UpdatePage.merge_achievements(account, res)
+
+    @staticmethod
+    def merge_achievements(account, achievements):
+        source = account.source
+        user = account.user
+
+        for awarded in achievements:
+            achievement = UpdatePage.get_achievement(source, awarded)
+
+            res = AwardedAchievement.gql("WHERE achievement = :ac AND user = :user",
+                                         ac=achievement,
+                                         user=account.user)
+
+            if res.count(1) == 0:
+                AwardedAchievement(achievement=achievement,
+                                   user=account.user,
+                                   awarded=awarded['date']).put()
+
+    @staticmethod
+    def get_achievement(source, achievement):
+        res = Achievement.gql("WHERE name = :name AND source = :source",
+                              name=achievement['title'],
+                              source=source)
+
+        if res.count(1) == 0:
+            res = Achievement(name=achievement['title'],
+                              image=achievement['img'],
+                              description=achievement['desc'],
+                              source=source)
+            res.put()
+        else:
+            res = res.get()
+
+        return res
 
 application = webapp.WSGIApplication([('/', MainPage),
                                       ('/admin/addsource', AddSourcePage),
