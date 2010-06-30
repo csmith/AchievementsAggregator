@@ -62,7 +62,37 @@ class MainPage(webapp.RequestHandler):
 
     def show_admin_form(self):
         self.response.out.write("""
-          ADMIN!""")
+          <h1>Sources</h1>
+          <h2>Add</h2>
+          <form action="/admin/addsource" method="post">
+           <label>Name: <input type="text" name="name"/></label>
+           <label>URL: <input type="text" name="url"/></label>
+           <input type="submit" value="Add"/>
+          </form>
+          <h2>View</h2>
+          <table>
+           <tr><th>Source</th><th>URL</th></tr>
+           """)
+
+        for source in AchievementSource.all():
+            self.response.out.write("<tr><td>");
+            self.response.out.write(cgi.escape(source.name))
+            self.response.out.write("</td><td>");
+            self.response.out.write(cgi.escape(source.url))
+            self.response.out.write("</td></tr>");
+
+class AddSourcePage(webapp.RequestHandler):
+    def post(self):
+
+        if not users.is_current_user_admin():
+            self.error(403)
+            return
+
+        source = AchievementSource(name=self.request.get('name'),
+                                   url=self.request.get('url'))
+        source.put()
+
+        self.redirect('/')
 
 
 class Guestbook(webapp.RequestHandler):
@@ -72,7 +102,8 @@ class Guestbook(webapp.RequestHandler):
         self.response.out.write('</pre></body></html>')
 
 application = webapp.WSGIApplication([('/', MainPage),
-                                      ('/sign', Guestbook)],
+                                      ('/sign', Guestbook),
+                                      ('/admin/addsource', AddSourcePage)],
                                      debug=True)
 
 def main():
