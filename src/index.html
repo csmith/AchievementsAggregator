@@ -2,8 +2,15 @@
     <head>
         <title>Achievement Aggregator</title>
         <style type="text/css">
+            body {
+                font-family: sans-serif;
+            }
+
             .achievement {
                 border: 1px solid black;
+                float: left;
+                margin: 5px;
+                padding: 2px;
                 position: relative;
                 display: block;
                 width: 450px;
@@ -18,6 +25,8 @@
             }
 
             .achievement .source {
+                text-transform: uppercase;
+                font-size: small;
                 display: inline;
                 font-weight: bold;
             }
@@ -37,14 +46,26 @@
             .achievement .date {
                 position: absolute;
                 margin: 0;
-                top: 0;
-                right: 0;
+                top: 2px;
+                right: 2px;
                 font-size: small;
             }
         </style>
     </head>
     <body>
         <div id="content">
+            {% if is_admin %}
+            <div class="admin">
+                <h1>Admin</h1>
+                <h2>Add Source</h2>
+                <form action="/admin/addsource" method="post">
+                    <label>Name: <input type="text" name="name"/></label>
+                    <label>URL: <input type="text" name="url"/></label>
+                    <input type="submit" value="Add"/>
+                </form>
+            </div>
+            {% endif %}
+
             <h1>My Accounts</h1>
             <table>
                 <tr>
