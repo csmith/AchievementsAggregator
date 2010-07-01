@@ -1,5 +1,5 @@
 import cgi
-from Scraper import scraper
+from Scraper import Scraper
 import os
 from google.appengine.ext.webapp import template
 
@@ -105,7 +105,7 @@ class UpdatePage(webapp.RequestHandler):
         res = []
 
         if account.source.name == 'Spore':
-            res = scraper().scrape_spore(account.credentials)
+            res = Scraper.scrape_spore(account.credentials)
 
         UpdatePage.merge_achievements(account, res)
 

@@ -2,9 +2,10 @@ from BeautifulSoup import BeautifulSoup
 from datetime import datetime
 import urllib2
 
-class scraper:
+class Scraper:
 
-    def scrape_spore(self, credentials):
+    @staticmethod
+    def scrape_spore(credentials):
         results = []
         url = "http://www.spore.com/view/achievements/%s" % credentials
         fmt = "%a %B %d, %Y"
