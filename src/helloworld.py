@@ -41,35 +41,14 @@ class MainPage(webapp.RequestHandler):
 
         template_values = {
             'is_admin': users.is_current_user_admin(),
+            'sources': AchievementSource.all(),
             'accounts': UserAccount.gql("WHERE user = :user", user=user),
-            'achievements': AwardedAchievement.gql("WHERE user = :user", user=user)
+            'achievements': AwardedAchievement.all().filter('user = ', user)
+                                              .order('-awarded')
         }
 
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_values))
-
-    def show_admin_form(self):
-        self.response.out.write("""
-          <h1>Admin - Sources</h1>
-          <h2>Add</h2>
-          <form action="/admin/addsource" method="post">
-           <label>Name: <input type="text" name="name"/></label>
-           <label>URL: <input type="text" name="url"/></label>
-           <input type="submit" value="Add"/>
-          </form>
-          <h2>View</h2>
-          <table>
-           <tr><th>Source</th><th>URL</th></tr>
-           """)
-
-        for source in AchievementSource.all():
-            self.response.out.write("<tr><td>")
-            self.response.out.write(cgi.escape(source.name))
-            self.response.out.write("</td><td>")
-            self.response.out.write(cgi.escape(source.url))
-            self.response.out.write("</td></tr>")
-
-        self.response.out.write("</table>")
 
     def show_sources(self):
         self.response.out.write("</table>")
@@ -88,20 +67,6 @@ class MainPage(webapp.RequestHandler):
            <label>Credentials: <input type="text" name="credentials"/></label>
            <input type="submit" value="Add"/>
           </form>""")
-
-    def show_achievements(self):
-        self.response.out.write("<h1>My Achievements</h1>")
-
-        for achievement in AwardedAchievement.gql("WHERE user = :user", user=users.get_current_user()):
-            self.show_achievement(achievement)
-
-    def show_achievement(self, achievement):
-        self.response.out.write("""
-            <div class="achievement">
-             <img src="%s" alt="%s"/>
-            </div>
-            """ % (cgi.escape(achievement.achievement.image),
-                  cgi.escape(achievement.achievement.name)))
 
 class AddSourcePage(webapp.RequestHandler):
     def post(self):
