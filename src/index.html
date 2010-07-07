@@ -90,7 +90,7 @@
             <form action="/addaccount" method="post">
                 <label>Type:
                    <select name="type">
-                        {% for account in sources %}
+                        {% for source in sources %}
                         <option value="{{ source.key|escape }}">{{ source.name|escape }}</option>
                         {% endfor %}
                    </select>
