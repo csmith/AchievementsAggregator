@@ -86,6 +86,19 @@
                 {% endfor %}
             </table>
 
+            <h2>Add account</h2>
+            <form action="/addaccount" method="post">
+                <label>Type:
+                   <select name="type">
+                        {% for account in sources %}
+                        <option value="{{ source.key|escape }}">{{ source.name|escape }}</option>
+                        {% endfor %}
+                   </select>
+                </label>
+                <label>Credentials: <input type="text" name="credentials"/></label>
+                <input type="submit" value="Add"/>
+            </form>
+
             <h1>My Achievements</h1>
 
             {% for achievement in achievements %}

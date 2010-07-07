@@ -50,24 +50,6 @@ class MainPage(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_values))
 
-    def show_sources(self):
-        self.response.out.write("</table>")
-        self.response.out.write("""<h2>Add Account</h2>
-          <form action="/addaccount" method="post">
-           <label>Type: <select name="type">""")
-
-        for source in AchievementSource.all():
-            self.response.out.write('<option value="')
-            self.response.out.write(source.key())
-            self.response.out.write('">')
-            self.response.out.write(cgi.escape(source.name))
-            self.response.out.write('</option>')
-
-        self.response.out.write("""</select></label>
-           <label>Credentials: <input type="text" name="credentials"/></label>
-           <input type="submit" value="Add"/>
-          </form>""")
-
 class AddSourcePage(webapp.RequestHandler):
     def post(self):
 
