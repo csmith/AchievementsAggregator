@@ -1,6 +1,5 @@
-import cgi
-from Scraper import Scraper
 import os
+from Scraper import Scraper
 from google.appengine.ext.webapp import template
 
 from google.appengine.ext import webapp
