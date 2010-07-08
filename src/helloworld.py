@@ -9,6 +9,7 @@ from google.appengine.ext import db
 class AchievementSource(db.Model):
     name = db.StringProperty()
     url = db.LinkProperty()
+    created_by = db.SelfReferenceProperty(default=None)
 
 class UserAccount(db.Model):
     user = db.UserProperty()
@@ -39,7 +40,7 @@ class MainPage(webapp.RequestHandler):
 
         template_values = {
             'is_admin': users.is_current_user_admin(),
-            'sources': AchievementSource.all(),
+            'sources': AchievementSource.all().filter('created_by = ', None),
             'accounts': UserAccount.gql("WHERE user = :user", user=user),
             'achievements': AwardedAchievement.all().filter('user = ', user)
                                               .order('-awarded')
@@ -131,8 +132,9 @@ class UpdatePage(webapp.RequestHandler):
         source = AchievementSource.gql("WHERE name = :name", name=source_info['name'])
 
         if source.count(1) == 0:
-            source = AchievementSource(name=source_info['name'],
-                                    url=source_info['url'])
+            source = AchievementSource(name = source_info['name'],
+                                       url = source_info['url'],
+                                       created_by = account.source)
             source.put()
         else:
             source = source.get()
