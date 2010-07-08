@@ -1,7 +1,6 @@
 import os
 from Scraper import Scraper
 from google.appengine.ext.webapp import template
-
 from google.appengine.ext import webapp
 from google.appengine.api import users
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -83,12 +82,18 @@ class UpdatePage(webapp.RequestHandler):
 
     def post(self):
         account = db.get(db.Key(self.request.get('key')))
-        res = []
 
         if account.source.name == 'Spore':
-            res = Scraper.scrape_spore(account.credentials)
+            UpdatePage.merge_achievements(account, Scraper.scrape_spore(account.credentials))
+        elif account.source.name == 'Steam':
+            UpdatePage.merge_sources(account, Scraper.scrape_steam(account.credentials))
 
-        UpdatePage.merge_achievements(account, res)
+        self.redirect('/')
+
+    @staticmethod
+    def merge_sources(account, sources):
+        for user_source in sources:
+            UpdatePage.get_or_create_source(user_source, account)
 
     @staticmethod
     def merge_achievements(account, achievements):
@@ -115,6 +120,32 @@ class UpdatePage(webapp.RequestHandler):
                               image=achievement['img'],
                               description=achievement['desc'],
                               source=source)
+            res.put()
+        else:
+            res = res.get()
+
+        return res
+
+    @staticmethod
+    def get_or_create_source(source_info, account):
+        source = AchievementSource.gql("WHERE name = :name", name=source_info['name'])
+
+        if source.count(1) == 0:
+            source = AchievementSource(name=source_info['name'],
+                                    url=source_info['url'])
+            source.put()
+        else:
+            source = source.get()
+
+        res = UserAccount.gql("WHERE source = :source AND user = :user AND "
+                            + "credentials = :creds", source = source,
+                                                      user = account.user,
+                                                      creds = account.credentials)
+
+        if res.count(1) == 0:
+            res = UserAccount(user = account.user,
+                              source = source,
+                              credentials = account.credentials)
             res.put()
         else:
             res = res.get()
