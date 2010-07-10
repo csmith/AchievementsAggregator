@@ -45,3 +45,21 @@ class Scraper:
           handleError(e)
 
         return results
+
+    @staticmethod
+    def scrape_steam_game(credentials, base_url):
+        results = []
+        url = (base_url % credentials) + "?xml=1"
+
+        try:
+          result = urllib2.urlopen(url).read()
+          soup = BeautifulSoup(result)
+          for ach in soup.findAll('achievement', {'closed': '1'}):
+              results.append({'img': ach.find('iconclosed').string.strip(),
+                              'title': ach.find('name').string.strip(),
+                              'desc': ach.find('description').string.strip(),
+                              'date': None})
+        except urllib2.URLError, e:
+          handleError(e)
+
+        return results

@@ -88,6 +88,8 @@ class UpdatePage(webapp.RequestHandler):
             UpdatePage.merge_achievements(account, Scraper.scrape_spore(account.credentials))
         elif account.source.name == 'Steam':
             UpdatePage.merge_sources(account, Scraper.scrape_steam(account.credentials))
+        elif account.source.created_by != None and account.source.created_by.name == 'Steam':
+            UpdatePage.merge_achievements(account, Scraper.scrape_steam_game(account.credentials, account.source.url))
 
         self.redirect('/')
 
