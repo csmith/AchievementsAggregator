@@ -1,3 +1,4 @@
+import logging
 import os
 from Scraper import Scraper
 from google.appengine.ext.webapp import template
@@ -75,6 +76,25 @@ class AddAccountPage(webapp.RequestHandler):
                               source=source,
                               credentials=self.request.get('credentials'))
         account.put()
+
+        self.redirect('/')
+
+class DeleteAccountPage(webapp.RequestHandler):
+    def post(self):
+
+        if not users.get_current_user():
+            self.error(403)
+            return
+
+        account = db.get(db.Key(self.request.get('key')))
+
+        if account.user != users.get_current_user() and not users.is_current_user_admin():
+            logging.warning("Account deletion attempted by :u1 for account owned by :u2",
+                            u1 = users.get_current_user(), u2 = account.user)
+            self.error(403)
+            return
+
+        account.delete()
 
         self.redirect('/')
 
@@ -157,9 +177,10 @@ class UpdatePage(webapp.RequestHandler):
         return res
 
 application = webapp.WSGIApplication([('/', MainPage),
-                                      ('/admin/addsource', AddSourcePage),
+                                      ('/admin/source/add', AddSourcePage),
                                       ('/worker/update', UpdatePage),
-                                      ('/addaccount', AddAccountPage)],
+                                      ('/account/add', AddAccountPage),
+                                      ('/account/delete', DeleteAccountPage)],
                                      debug=True)
 
 def main():

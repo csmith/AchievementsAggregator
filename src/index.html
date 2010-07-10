@@ -50,6 +50,10 @@
                 right: 2px;
                 font-size: small;
             }
+
+            td.actions form {
+                display: inline;
+            }
         </style>
     </head>
     <body>
@@ -58,7 +62,7 @@
             <div class="admin">
                 <h1>Admin</h1>
                 <h2>Add Source</h2>
-                <form action="/admin/addsource" method="post">
+                <form action="/admin/source/add" method="post">
                     <label>Name: <input type="text" name="name"/></label>
                     <label>URL: <input type="text" name="url"/></label>
                     <input type="submit" value="Add"/>
@@ -76,10 +80,14 @@
                 <tr>
                     <td>{{ account.source.name|escape }}</td>
                     <td>{{ account.credentials|escape }}</td>
-                    <td>
+                    <td class="actions">
                         <form action="/worker/update" method="post">
                             <input type="hidden" name="key" value="{{ account.key|escape }}"/>
                             <input type="submit" value="Update now"/>
+                        </form>
+                        <form action="/account/delete" method="post">
+                            <input type="hidden" name="key" value="{{ account.key|escape }}"/>
+                            <input type="submit" value="Delete"/>
                         </form>
                     </td>
                 </tr>
@@ -87,7 +95,7 @@
             </table>
 
             <h2>Add account</h2>
-            <form action="/addaccount" method="post">
+            <form action="/account/add" method="post">
                 <label>Type:
                    <select name="type">
                         {% for source in sources %}
